@@ -1,0 +1,16 @@
+[submodule "sdk"]
+	path = sdk
+	url = https://github.com/luckfox-eng29/luckfox-pico.git
+	branch = kvm-develop
+[submodule "kvm"]
+	path = kvm
+	url = https://github.com/LuckfoxTECH/kvm.git
+[submodule "kvm_display"]
+	path = kvm_display
+	url = https://github.com/luckfox-eng29/kvm_display.git
+[submodule "kvm_video"]
+	path = kvm_video
+	url = https://github.com/luckfox-eng29/kvm_video.git
+[submodule "kvm_system"]
+	path = kvm_system
+	url = https://github.com/luckfox-eng29/kvm_system.git

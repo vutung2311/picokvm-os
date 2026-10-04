@@ -1,0 +1,23 @@
+--- a/drivers/input/touchscreen/hynitron-cst816x.c
++++ b/drivers/input/touchscreen/hynitron-cst816x.c
+@@ -148,15 +148,14 @@ static irqreturn_t cst816x_irq_cb(int irq, void *cookie)
+ 		input_report_abs(priv->input, ABS_X, info.abs_x);
+ 		input_report_abs(priv->input, ABS_Y, info.abs_y);
+ 		input_report_key(priv->input, BTN_TOUCH, 1);
++	} else {
++		input_report_key(priv->input, BTN_TOUCH, 0);
+ 	}
+ 
+ 	if (info.gesture) {
+-		input_report_key(priv->input,
+-				 priv->event_map[info.gesture & 0x0F].code,
+-				 info.touch);
+-
+-		if (!info.touch)
+-			input_report_key(priv->input, BTN_TOUCH, 0);
++		u16 code = priv->event_map[info.gesture & 0x0F].code;
++		if (code)
++			input_report_key(priv->input, code, info.touch);
+ 	}
+ 
+ 	input_sync(priv->input);

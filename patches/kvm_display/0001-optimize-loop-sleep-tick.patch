@@ -1,0 +1,11 @@
+--- a/screen.c
++++ b/screen.c
+@@ -68,7 +68,7 @@ void init_lvgl() {
+ void *run_lvgl_loop(void *arg) {
+     while(1) {
+         lv_timer_handler();
+-        usleep(500);
++        usleep(10000);
+     }
+ }
+ 
