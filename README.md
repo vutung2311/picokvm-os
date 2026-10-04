@@ -43,36 +43,36 @@ The `make patch` command automatically applies critical hardware and driver impr
 make submodules
 ```
 
-### 2. Apply Patches
+### 2. Complete One-Step Build
 ```bash
+# For PicoKVM Lite (MicroSD card only - default):
+make all
+# or explicitly:
+make all TARGET_MEDIUM=sd_card
+
+# For PicoKVM Standard (onboard eMMC):
+make all TARGET_MEDIUM=emmc
+```
+
+### 3. Step-by-Step Build (Optional)
+```bash
+# Apply patches & copy board configs
 make patch
-```
 
-### 3. Build Kernel (`boot.img`)
-```bash
-# Default builds for SD card boot:
-make kernel
+# Build bootloader (idblock, uboot, env):
+make bootloader TARGET_MEDIUM=sd_card
 
-# Or for onboard eMMC boot:
-make kernel TARGET_MEDIUM=emmc
-```
+# Build Linux kernel (boot.img):
+make kernel TARGET_MEDIUM=sd_card
 
-### 4. Build Userland Applications
-```bash
+# Cross-compile applications (kvm_app, kvm_display, kvm_video):
 make apps
-# Compiles kvm_display, kvm_video, and kvm_app using the cross toolchain.
-```
 
-### 5. Generate Full Bootable SD Card Image
-```bash
-make sd-image
-# Generates output/picokvm-sdcard.img
-```
+# Generate bootable SD image:
+make sd-image TARGET_MEDIUM=sd_card
 
-### 6. Generate Web OTA Package
-```bash
+# Generate Web OTA package:
 make ota
-# Generates output/picokvm-ota.zip
 ```
 
 ---
@@ -98,9 +98,10 @@ sudo dd if=output/picokvm-sdcard.img of=/dev/sdX bs=4M status=progress conv=fsyn
 
 | Command | Action |
 | :--- | :--- |
-| `make all` | Builds kernel, all applications, OTA archive, and bootable SD image |
-| `make kernel` | Compiles patched kernel and generates `output/boot.img` |
+| `make all` | Builds bootloader, kernel, apps, OTA archive, and bootable SD image (`TARGET_MEDIUM=sd_card` or `emmc`) |
+| `make bootloader` | Compiles U-Boot, idblock, and env (`TARGET_MEDIUM=sd_card` or `emmc`) |
+| `make kernel` | Compiles patched Linux kernel and generates `output/boot.img` (`TARGET_MEDIUM=sd_card` or `emmc`) |
 | `make apps` | Cross-compiles `kvm_app`, `kvm_display`, and `kvm_video` |
-| `make sd-image` | Generates `output/picokvm-sdcard.img` |
+| `make sd-image` | Generates `output/picokvm-sdcard.img` (`TARGET_MEDIUM=sd_card` or `emmc`) |
 | `make ota` | Packages `output/picokvm-ota.zip` |
 | `make clean` | Removes compiled binaries and staging files |

@@ -4,13 +4,13 @@
 	branch = kvm-develop
 [submodule "kvm"]
 	path = kvm
-	url = https://github.com/LuckfoxTECH/kvm.git
+	url = https://github.com/vutung2311/kvm.git
 [submodule "kvm_display"]
 	path = kvm_display
 	url = https://github.com/vutung2311/kvm_display.git
 [submodule "kvm_video"]
 	path = kvm_video
-	url = https://github.com/luckfox-eng29/kvm_video.git
+	url = https://github.com/vutung2311/kvm_video.git
 [submodule "kvm_system"]
 	path = kvm_system
 	url = https://github.com/luckfox-eng29/kvm_system.git

@@ -7,34 +7,29 @@ IMAGE_PATH="$OUTPUT_DIR/picokvm-sdcard.img"
 
 mkdir -p "$OUTPUT_DIR"
 
-# Locate partition images with fallback to kvm_system reference and SDK
-IDBLOCK_IMG="$OUTPUT_DIR/idblock.img"
-if [ ! -f "$IDBLOCK_IMG" ] && [ -f "$ROOT_DIR/sdk/output/image/idblock.img" ]; then
-    IDBLOCK_IMG="$ROOT_DIR/sdk/output/image/idblock.img"
-fi
-if [ ! -f "$IDBLOCK_IMG" ]; then
-    echo "  Building idblock via SDK uboot..."
-    (cd "$ROOT_DIR/sdk" && ./build.sh uboot >/dev/null 2>&1)
-    IDBLOCK_IMG="$ROOT_DIR/sdk/output/image/idblock.img"
-    if [ -f "$IDBLOCK_IMG" ]; then
-        cp -fv "$IDBLOCK_IMG" "$OUTPUT_DIR/idblock.img"
-        IDBLOCK_IMG="$OUTPUT_DIR/idblock.img"
-    fi
-fi
+BOOT_IMG="${1:-$OUTPUT_DIR/boot.img}"
+MEDIUM="${2:-sd_card}"
 
+# Locate or build bootloader components (env, idblock, uboot)
+ENV_IMG="$OUTPUT_DIR/env.img"
+IDBLOCK_IMG="$OUTPUT_DIR/idblock.img"
 UBOOT_IMG="$OUTPUT_DIR/uboot.img"
-if [ ! -f "$UBOOT_IMG" ] && [ -f "$ROOT_DIR/sdk/output/image/uboot.img" ]; then
-    UBOOT_IMG="$ROOT_DIR/sdk/output/image/uboot.img"
-fi
-if [ ! -f "$UBOOT_IMG" ] && [ -f "$ROOT_DIR/kvm_system/split_and_check_md5.sh" ]; then
-    echo "  Extracting reference uboot from kvm_system..."
-    cat "$ROOT_DIR/kvm_system"/update_system.tar.split.* | tar -xC "$OUTPUT_DIR" uboot.img 2>/dev/null || true
+
+if [ ! -f "$ENV_IMG" ] || [ ! -f "$IDBLOCK_IMG" ] || [ ! -f "$UBOOT_IMG" ]; then
+    echo "  Building bootloader (idblock, uboot, env) for $MEDIUM..."
+    "$ROOT_DIR/scripts/build-bootloader.sh" "$MEDIUM"
+    ENV_IMG="$OUTPUT_DIR/env.img"
+    IDBLOCK_IMG="$OUTPUT_DIR/idblock.img"
     UBOOT_IMG="$OUTPUT_DIR/uboot.img"
 fi
 
-BOOT_IMG="${1:-$OUTPUT_DIR/boot.img}"
 if [ ! -f "$BOOT_IMG" ] && [ -f "$ROOT_DIR/sdk/output/image/boot.img" ]; then
     BOOT_IMG="$ROOT_DIR/sdk/output/image/boot.img"
+fi
+if [ ! -f "$BOOT_IMG" ]; then
+    echo "  Building kernel for $MEDIUM..."
+    "$ROOT_DIR/scripts/build-kernel.sh" "$MEDIUM"
+    BOOT_IMG="$OUTPUT_DIR/boot.img"
 fi
 
 SYSTEM_IMG="$OUTPUT_DIR/system.img"
@@ -48,10 +43,10 @@ if [ ! -f "$SYSTEM_IMG" ] && [ -f "$ROOT_DIR/kvm_system/split_and_check_md5.sh" 
 fi
 
 # Verify required files
-for img in "$IDBLOCK_IMG" "$UBOOT_IMG" "$BOOT_IMG" "$SYSTEM_IMG"; do
+for img in "$ENV_IMG" "$IDBLOCK_IMG" "$UBOOT_IMG" "$BOOT_IMG" "$SYSTEM_IMG"; do
     if [ ! -f "$img" ]; then
         echo "Error: Required image not found: $img" >&2
-        echo "Please run 'make kernel' and compile apps before creating SD image." >&2
+        echo "Please run 'make bootloader kernel apps' before creating SD image." >&2
         exit 1
     fi
 done
@@ -67,10 +62,10 @@ if [ -d "$ROOT_DIR/output/bin" ] && command -v debugfs >/dev/null 2>&1; then
     done
 fi
 
-echo "==> Creating Rockchip RV1106 GPT Dual-Slot A/B bootable SD image: $IMAGE_PATH"
+echo "==> Creating Rockchip RV1106 Dual-Slot A/B bootable SD image: $IMAGE_PATH"
 
 # Check required host utilities
-for cmd in sgdisk dd python3 mke2fs debugfs; do
+for cmd in dd python3 mke2fs debugfs; do
     if ! command -v "$cmd" >/dev/null 2>&1; then
         echo "Error: Required utility '$cmd' is not installed." >&2
         exit 1
@@ -81,33 +76,20 @@ done
 rm -f "$IMAGE_PATH"
 dd if=/dev/zero of="$IMAGE_PATH" bs=1M count=0 seek=2200 status=none
 
-# Create GPT partition table matching Luckfox RV1106 dual-slot A/B layout
-echo "  Partitioning GPT layout..."
-sgdisk -Z "$IMAGE_PATH" >/dev/null 2>&1 || true
-sgdisk -a 1 \
-    -n 1:34:63         -c 1:env \
-    -n 2:64:1087       -c 2:idblock \
-    -n 3:1088:2111     -c 3:uboot_a \
-    -n 4:2112:3135     -c 4:uboot_b \
-    -n 5:3136:3647     -c 5:misc \
-    -n 6:3648:4095     -c 6:security \
-    -n 7:4096:69631    -c 7:boot_a \
-    -n 8:69632:135167  -c 8:boot_b \
-    -n 9:135168:1183743 -c 9:system_a \
-    -n 10:1183744:2232319 -c 10:system_b \
-    -n 11:2232320:0    -c 11:userdata \
-    "$IMAGE_PATH" >/dev/null
+# 1. Write env.img @ sector 0 (Rockchip Fast ENV with partition layout)
+echo "  Writing env.img @ sector 0..."
+dd if="$ENV_IMG" of="$IMAGE_PATH" seek=0 bs=512 conv=notrunc status=none
 
-# 1. Write idblock @ sector 64 (Rockchip RV1106 BootROM entry point)
+# 2. Write idblock @ sector 64 (Rockchip RV1106 BootROM entry point)
 echo "  Writing idblock.img @ sector 64..."
 dd if="$IDBLOCK_IMG" of="$IMAGE_PATH" seek=64 bs=512 conv=notrunc status=none
 
-# 2. Write uboot_a & uboot_b
+# 3. Write uboot_a & uboot_b
 echo "  Writing uboot.img to uboot_a (sector 1088) & uboot_b (sector 2112)..."
 dd if="$UBOOT_IMG" of="$IMAGE_PATH" seek=1088 bs=512 conv=notrunc status=none
 dd if="$UBOOT_IMG" of="$IMAGE_PATH" seek=2112 bs=512 conv=notrunc status=none
 
-# 3. Initialize misc partition with AVB A/B boot metadata (Slot A active, Slot B bootable)
+# 4. Initialize misc partition with AVB A/B boot metadata (Slot A active, Slot B bootable)
 echo "  Initializing misc partition with AVB A/B boot metadata @ sector 3136..."
 python3 -c "
 import struct, zlib
@@ -135,29 +117,49 @@ with open('$IMAGE_PATH', 'r+b') as f:
     f.write(ab_data)
 "
 
-# 4. Write boot_a & boot_b (Dual-slot kernel 5.10 with CST816X fix)
+# 5. Write boot_a & boot_b (Dual-slot kernel 5.10 with CST816X fix)
 echo "  Writing boot.img to boot_a (sector 4096) & boot_b (sector 69632)..."
 dd if="$BOOT_IMG" of="$IMAGE_PATH" seek=4096 bs=512 conv=notrunc status=none
 dd if="$BOOT_IMG" of="$IMAGE_PATH" seek=69632 bs=512 conv=notrunc status=none
 
-# 5. Write system_a & system_b (Dual-slot rootfs with compiled kvm binaries)
+# 6. Write system_a & system_b (Dual-slot rootfs with compiled kvm binaries)
 echo "  Writing system.img to system_a (sector 135168) & system_b (sector 1183744)..."
 dd if="$SYSTEM_IMG" of="$IMAGE_PATH" seek=135168 bs=512 conv=notrunc status=none
 dd if="$SYSTEM_IMG" of="$IMAGE_PATH" seek=1183744 bs=512 conv=notrunc status=none
 
-# 6. Initialize userdata partition with ext4 filesystem
+# 7. Initialize userdata partition with ext4 filesystem
 echo "  Formatting initial ext4 filesystem on userdata (sector 2232320)..."
 TMP_USERDATA="/tmp/picokvm_userdata_init.img"
 rm -f "$TMP_USERDATA"
 mke2fs -t ext4 -L userdata -F "$TMP_USERDATA" 64M >/dev/null 2>&1
+if [ -d "$ROOT_DIR/output/bin" ] && command -v debugfs >/dev/null 2>&1; then
+    echo "  Populating /userdata/picokvm/bin with compiled applications..."
+    debugfs -w -R "mkdir /picokvm" "$TMP_USERDATA" >/dev/null 2>&1 || true
+    debugfs -w -R "mkdir /picokvm/bin" "$TMP_USERDATA" >/dev/null 2>&1 || true
+    for bin in "$ROOT_DIR/output/bin"/kvm_*; do
+        [ -f "$bin" ] || continue
+        bname=$(basename "$bin")
+        debugfs -w -R "write $bin /picokvm/bin/$bname" "$TMP_USERDATA" >/dev/null 2>&1
+    done
+fi
 dd if="$TMP_USERDATA" of="$IMAGE_PATH" seek=2232320 bs=512 conv=notrunc status=none
 rm -f "$TMP_USERDATA"
 
 echo "==> Bootable SD image created successfully:"
 ls -lh "$IMAGE_PATH"
 echo ""
-echo "Partition layout summary:"
-sgdisk -p "$IMAGE_PATH"
+echo "Partition Layout (Rockchip raw blkdevparts layout):"
+echo "  Sector 0 (0B)          : env.img (32KB)"
+echo "  Sector 64 (32KB)       : idblock.img (BootROM SPL, 512KB)"
+echo "  Sector 1088 (544KB)    : uboot_a (512KB)"
+echo "  Sector 2112 (1056KB)   : uboot_b (512KB)"
+echo "  Sector 3136 (1568KB)   : misc (AVB Slot metadata, 256KB)"
+echo "  Sector 3648 (1824KB)   : security (224KB)"
+echo "  Sector 4096 (2MB)      : boot_a (Kernel FIT, 32MB)"
+echo "  Sector 69632 (34MB)    : boot_b (Kernel FIT, 32MB)"
+echo "  Sector 135168 (66MB)   : system_a (Rootfs, 512MB)"
+echo "  Sector 1183744 (578MB) : system_b (Rootfs, 512MB)"
+echo "  Sector 2232320 (1090MB): userdata (ext4)"
 echo ""
 echo "Flashing instructions:"
 echo "  sudo dd if=$IMAGE_PATH of=/dev/sdX bs=4M status=progress conv=fsync"

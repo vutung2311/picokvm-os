@@ -1,0 +1,248 @@
+diff --git a/kvmui/setup_scr_Main.c b/kvmui/setup_scr_Main.c
+index a7c3d31..a48ce65 100644
+--- a/kvmui/setup_scr_Main.c
++++ b/kvmui/setup_scr_Main.c
+@@ -94,6 +94,7 @@ void setup_scr_Main(lv_ui *ui)
+     lv_obj_set_pos(ui->Main_HDMI_Cont, 10, 133);
+     lv_obj_set_size(ui->Main_HDMI_Cont, 108, 96);
+     lv_obj_set_scrollbar_mode(ui->Main_HDMI_Cont, LV_SCROLLBAR_MODE_OFF);
++    lv_obj_clear_flag(ui->Main_HDMI_Cont, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_SCROLLABLE);
+ 
+     //Write style for Main_HDMI_Cont, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
+     lv_obj_set_style_border_width(ui->Main_HDMI_Cont, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
+@@ -149,6 +150,7 @@ void setup_scr_Main(lv_ui *ui)
+     lv_obj_set_pos(ui->Main_USB_Cont, 122, 133);
+     lv_obj_set_size(ui->Main_USB_Cont, 108, 96);
+     lv_obj_set_scrollbar_mode(ui->Main_USB_Cont, LV_SCROLLBAR_MODE_OFF);
++    lv_obj_clear_flag(ui->Main_USB_Cont, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_SCROLLABLE);
+ 
+     //Write style for Main_USB_Cont, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
+     lv_obj_set_style_border_width(ui->Main_USB_Cont, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
+diff --git a/kvmui/setup_scr_Monitor.c b/kvmui/setup_scr_Monitor.c
+index 2455c61..a74b75a 100644
+--- a/kvmui/setup_scr_Monitor.c
++++ b/kvmui/setup_scr_Monitor.c
+@@ -22,13 +22,12 @@ void setup_scr_Monitor(lv_ui *ui)
+     ui->Monitor = lv_obj_create(NULL);
+     lv_obj_set_size(ui->Monitor, 240, 240);
+     lv_obj_set_scrollbar_mode(ui->Monitor, LV_SCROLLBAR_MODE_OFF);
+-    lv_obj_add_flag(ui->Monitor, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+ 
+     //Write style for Monitor, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
+     lv_obj_set_style_bg_opa(ui->Monitor, 255, LV_PART_MAIN|LV_STATE_DEFAULT);
+     lv_obj_set_style_bg_color(ui->Monitor, lv_color_hex(0x000000), LV_PART_MAIN|LV_STATE_DEFAULT);
+     lv_obj_set_style_bg_grad_dir(ui->Monitor, LV_GRAD_DIR_NONE, LV_PART_MAIN|LV_STATE_DEFAULT);
+-    lv_obj_clear_flag(ui->Monitor, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_SCROLLABLE);
++    lv_obj_clear_flag(ui->Monitor, LV_OBJ_FLAG_SCROLLABLE);
+ 
+     //Write codes Monitor_CPU_Used_Cont
+     ui->Monitor_CPU_Used_Cont = lv_obj_create(ui->Monitor);
+@@ -237,6 +236,7 @@ void setup_scr_Monitor(lv_ui *ui)
+     lv_obj_set_pos(ui->Monitor_CPU_Temp_Cont, 10, 120);
+     lv_obj_set_size(ui->Monitor_CPU_Temp_Cont, 220, 40);
+     lv_obj_set_scrollbar_mode(ui->Monitor_CPU_Temp_Cont, LV_SCROLLBAR_MODE_OFF);
++    lv_obj_clear_flag(ui->Monitor_CPU_Temp_Cont, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_SCROLLABLE);
+ 
+     //Write style for Monitor_CPU_Temp_Cont, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
+     lv_obj_set_style_border_width(ui->Monitor_CPU_Temp_Cont, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
+diff --git a/kvmui/setup_scr_Network.c b/kvmui/setup_scr_Network.c
+index 46d3870..83b24b3 100644
+--- a/kvmui/setup_scr_Network.c
++++ b/kvmui/setup_scr_Network.c
+@@ -34,6 +34,7 @@ void setup_scr_Network(lv_ui *ui)
+     lv_obj_set_pos(ui->Network_Address_Cont, 10, 10);
+     lv_obj_set_size(ui->Network_Address_Cont, 220, 132);
+     lv_obj_set_scrollbar_mode(ui->Network_Address_Cont, LV_SCROLLBAR_MODE_OFF);
++    lv_obj_clear_flag(ui->Network_Address_Cont, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_SCROLLABLE);
+ 
+     //Write style for Network_Address_Cont, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
+     lv_obj_set_style_border_width(ui->Network_Address_Cont, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
+@@ -157,6 +158,7 @@ void setup_scr_Network(lv_ui *ui)
+     lv_obj_set_pos(ui->Network_TailScale_Cont, 10, 190);
+     lv_obj_set_size(ui->Network_TailScale_Cont, 220, 40);
+     lv_obj_set_scrollbar_mode(ui->Network_TailScale_Cont, LV_SCROLLBAR_MODE_OFF);
++    lv_obj_clear_flag(ui->Network_TailScale_Cont, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_SCROLLABLE);
+ 
+     //Write style for Network_TailScale_Cont, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
+     lv_obj_set_style_border_width(ui->Network_TailScale_Cont, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
+@@ -212,6 +214,7 @@ void setup_scr_Network(lv_ui *ui)
+     lv_obj_set_pos(ui->Network_ZeroTier_Cont, 10, 146);
+     lv_obj_set_size(ui->Network_ZeroTier_Cont, 220, 40);
+     lv_obj_set_scrollbar_mode(ui->Network_ZeroTier_Cont, LV_SCROLLBAR_MODE_OFF);
++    lv_obj_clear_flag(ui->Network_ZeroTier_Cont, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_SCROLLABLE);
+ 
+     //Write style for Network_ZeroTier_Cont, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
+     lv_obj_set_style_border_width(ui->Network_ZeroTier_Cont, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
+@@ -267,6 +270,7 @@ void setup_scr_Network(lv_ui *ui)
+     lv_obj_set_pos(ui->Network_No_Network_Cont, 10, 10);
+     lv_obj_set_size(ui->Network_No_Network_Cont, 220, 220);
+     lv_obj_set_scrollbar_mode(ui->Network_No_Network_Cont, LV_SCROLLBAR_MODE_OFF);
++    lv_obj_clear_flag(ui->Network_No_Network_Cont, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_SCROLLABLE);
+ 
+     //Write style for Network_No_Network_Cont, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
+     lv_obj_set_style_border_width(ui->Network_No_Network_Cont, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
+diff --git a/kvmui/setup_scr_Version.c b/kvmui/setup_scr_Version.c
+index c26c63f..869e343 100644
+--- a/kvmui/setup_scr_Version.c
++++ b/kvmui/setup_scr_Version.c
+@@ -34,6 +34,7 @@ void setup_scr_Version(lv_ui *ui)
+     lv_obj_set_pos(ui->Version_ui_Version_cont, 10, 10);
+     lv_obj_set_size(ui->Version_ui_Version_cont, 220, 220);
+     lv_obj_set_scrollbar_mode(ui->Version_ui_Version_cont, LV_SCROLLBAR_MODE_OFF);
++    lv_obj_clear_flag(ui->Version_ui_Version_cont, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_SCROLLABLE);
+ 
+     //Write style for Version_ui_Version_cont, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
+     lv_obj_set_style_border_width(ui->Version_ui_Version_cont, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
+diff --git a/screen.c b/screen.c
+index 1ce437b..4fb2c52 100644
+--- a/screen.c
++++ b/screen.c
+@@ -1,7 +1,12 @@
++#define _GNU_SOURCE
+ #include <time.h>
+ #include <sys/time.h>
+ #include <stdio.h>
+ #include <unistd.h>
++#include <fcntl.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <linux/input.h>
+ 
+ #include "screen.h"
+ #include "lvgl/lvgl.h"
+@@ -24,6 +29,28 @@ static lv_disp_draw_buf_t disp_buf;
+ static lv_disp_drv_t disp_drv;
+ static lv_indev_drv_t indev_drv;
+ 
++static const char *find_touchscreen_device(void) {
++    static char dev_path[64];
++    for (int i = 0; i < 10; i++) {
++        snprintf(dev_path, sizeof(dev_path), "/dev/input/event%d", i);
++        int fd = open(dev_path, O_RDONLY | O_NONBLOCK);
++        if (fd < 0) continue;
++
++        char name[128] = {0};
++        if (ioctl(fd, EVIOCGNAME(sizeof(name)), name) >= 0) {
++            printf("[kvm_display] Checking input %s: '%s'\n", dev_path, name);
++            if (strcasestr(name, "cst816") || strcasestr(name, "touch")) {
++                printf("[kvm_display] Selected touchscreen device: %s ('%s')\n", dev_path, name);
++                close(fd);
++                return dev_path;
++            }
++        }
++        close(fd);
++    }
++    printf("[kvm_display] Fallback touchscreen device: /dev/input/event0\n");
++    return "/dev/input/event0";
++}
++
+ void init_lvgl() {
+     lv_init();
+     fbdev_init();
+@@ -40,11 +67,14 @@ void init_lvgl() {
+     lv_disp_drv_register(&disp_drv);
+ 
+     evdev_init();
+-    evdev_set_file("/dev/input/event0");
++    const char *touch_dev = find_touchscreen_device();
++    evdev_set_file(touch_dev);
+ 
+     lv_indev_drv_init(&indev_drv);
+     indev_drv.type = LV_INDEV_TYPE_POINTER;
+     indev_drv.read_cb = evdev_read;
++    indev_drv.gesture_limit = 30;
++    indev_drv.gesture_min_velocity = 1;
+     lv_indev_drv_register(&indev_drv);
+  
+     setup_ui(&guider_ui);
+diff --git a/update.c b/update.c
+index b39fdf2..ad0378a 100644
+--- a/update.c
++++ b/update.c
+@@ -135,11 +135,13 @@ int get_cpu_usage()
+ 
+     file = fopen("/proc/stat", "r");
+     if (file == NULL) {
+-        perror("open failed/proc/stat");
+         return -1;
+     }
+-    fscanf(file, "cpu %llu %llu %llu %llu %llu %llu %llu", 
+-           &user, &nice, &system, &idle, &iowait, &irq, &softirq);
++    if (fscanf(file, "cpu %llu %llu %llu %llu %llu %llu %llu", 
++               &user, &nice, &system, &idle, &iowait, &irq, &softirq) != 7) {
++        fclose(file);
++        return -1;
++    }
+     fclose(file);
+ 
+     total_time = user + nice + system + idle + iowait + irq + softirq;
+@@ -148,15 +150,7 @@ int get_cpu_usage()
+     if (prev_total == 0 || prev_idle == 0) {
+         prev_total = total_time;
+         prev_idle = idle_time;
+-        sleep(1);
+-
+-        file = fopen("/proc/stat", "r");
+-        fscanf(file, "cpu %llu %llu %llu %llu %llu %llu %llu", 
+-               &user, &nice, &system, &idle, &iowait, &irq, &softirq);
+-        fclose(file);
+-
+-        total_time = user + nice + system + idle + iowait + irq + softirq;
+-        idle_time = idle;
++        return 0;
+     }
+ 
+     total_diff = total_time - prev_total;
+@@ -178,12 +172,10 @@ int get_cpu_temperature()
+ 
+     file = fopen("/sys/class/thermal/thermal_zone0/temp", "r");
+     if (file == NULL) {
+-        perror("Failed to open temperature file");
+         return -1;
+     }
+ 
+     if (fscanf(file, "%d", &raw_temp) != 1) {
+-        perror("Failed to read temperature value");
+         fclose(file);
+         return -1;
+     }
+@@ -196,23 +188,27 @@ int get_cpu_temperature()
+ 
+ int get_ram_usage() 
+ {
+-    FILE* file;
+-    char line[128];
+-    int usage = 0;
+-
+-    FILE* pipe = popen("free | awk '/Mem:/ {printf(\"%d\\n\", $3/$2*100)}'", "r");
+-    if (pipe == NULL) {
+-        perror("popen failed");
+-        return -1;
++    FILE* file = fopen("/proc/meminfo", "r");
++    if (file == NULL) {
++        return 0;
+     }
+ 
+-    if (fgets(line, sizeof(line), pipe) != NULL) {
+-        sscanf(line, "%d", &usage);
++    char line[128];
++    unsigned long total = 0, available = 0, free = 0, buffers = 0, cached = 0;
++    while (fgets(line, sizeof(line), file)) {
++        if (sscanf(line, "MemTotal: %lu kB", &total) == 1) continue;
++        if (sscanf(line, "MemAvailable: %lu kB", &available) == 1) continue;
++        if (sscanf(line, "MemFree: %lu kB", &free) == 1) continue;
++        if (sscanf(line, "Buffers: %lu kB", &buffers) == 1) continue;
++        if (sscanf(line, "Cached: %lu kB", &cached) == 1) continue;
+     }
++    fclose(file);
+ 
+-    pclose(pipe);
++    if (total == 0) return 0;
++    if (available == 0) available = free + buffers + cached;
++    if (available > total) available = total;
+ 
+-    return usage;
++    return (int)(((total - available) * 100) / total);
+ }
+ 
+ void* run_monitor_loop(void* arg) {

@@ -23,9 +23,11 @@ if [ ! -d "$SDK_PATH/media/out/lib" ]; then
     make -C "$SDK_PATH/media" media_libs
 fi
 
-mkdir -p "$ROOT_DIR/kvm_video/librga"
-ln -sf "$SDK_PATH/media/out/include/rga" "$ROOT_DIR/kvm_video/librga/include"
-ln -sf "$SDK_PATH/media/out/rga_samples" "$ROOT_DIR/kvm_video/librga/samples"
+if [ ! -f "$ROOT_DIR/kvm_video/librga/include/im2d.h" ]; then
+    mkdir -p "$ROOT_DIR/kvm_video/librga"
+    ln -sfn "$SDK_PATH/media/out/include/rga" "$ROOT_DIR/kvm_video/librga/include"
+    ln -sfn "$SDK_PATH/media/out/rga_samples" "$ROOT_DIR/kvm_video/librga/samples"
+fi
 
 cd "$ROOT_DIR/kvm_video"
 RK_APP_CROSS="$SDK_PATH/tools/linux/toolchain/arm-rockchip830-linux-uclibcgnueabihf/bin/arm-rockchip830-linux-uclibcgnueabihf"

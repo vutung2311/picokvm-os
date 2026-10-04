@@ -8,12 +8,13 @@ OUTPUT_DIR := $(ROOT_DIR)/output
 # Target boot medium: sd_card (default) or emmc
 TARGET_MEDIUM ?= sd_card
 
-.PHONY: all submodules patch kernel apps display video app sd-image ota clean help
+.NOTPARALLEL:
+.PHONY: all submodules patch bootloader kernel apps display video app sd-image ota clean help
 
-all: submodules patch kernel apps ota sd-image
+all: submodules patch bootloader kernel apps ota sd-image
 	@echo ""
 	@echo "=========================================================="
-	@echo "  PicoKVM Build Complete!"
+	@echo "  PicoKVM Build Complete ($(TARGET_MEDIUM))!"
 	@echo "  Bootable SD Image : $(OUTPUT_DIR)/picokvm-sdcard.img"
 	@echo "  Web OTA Package   : $(OUTPUT_DIR)/picokvm-ota.zip"
 	@echo "  Kernel FIT Image  : $(OUTPUT_DIR)/boot.img"
@@ -23,11 +24,15 @@ all: submodules patch kernel apps ota sd-image
 submodules:
 	@echo "==> Updating git submodules..."
 	git submodule sync
-	git submodule update --init --recursive
+	git submodule update --init
 
-patch:
+patch: submodules
 	@echo "==> Applying hardware and driver patches..."
 	@$(ROOT_DIR)/scripts/apply-patches.sh
+
+bootloader: patch
+	@echo "==> Building Bootloader for $(TARGET_MEDIUM)..."
+	@$(ROOT_DIR)/scripts/build-bootloader.sh $(TARGET_MEDIUM)
 
 kernel: patch
 	@echo "==> Building Linux Kernel for $(TARGET_MEDIUM)..."
@@ -52,11 +57,11 @@ app: patch
 	@cd $(ROOT_DIR)/kvm && GOOS=linux GOARCH=arm GOARM=7 go build -trimpath -ldflags="-s -w" -o $(OUTPUT_DIR)/bin/kvm_app cmd/main.go
 	@mkdir -p $(OUTPUT_DIR)/bin
 
-sd-image:
-	@echo "==> Assembling full bootable SD card image..."
-	@$(ROOT_DIR)/scripts/create-sd-image.sh $(OUTPUT_DIR)/boot.img
+sd-image: bootloader kernel apps
+	@echo "==> Assembling full bootable SD card image for $(TARGET_MEDIUM)..."
+	@$(ROOT_DIR)/scripts/create-sd-image.sh $(OUTPUT_DIR)/boot.img $(TARGET_MEDIUM)
 
-ota:
+ota: kernel apps
 	@echo "==> Packaging web-flashable OTA update..."
 	@$(ROOT_DIR)/scripts/package-ota.sh $(OUTPUT_DIR)/boot.img
 
@@ -69,15 +74,18 @@ clean:
 
 help:
 	@echo "PicoKVM-OS Build System Targets:"
-	@echo "  make all         - Complete build (kernel, apps, ota, and sd-image)"
+	@echo "  make all         - Complete build (bootloader, kernel, apps, ota, and sd-image)"
+	@echo "                     Options: TARGET_MEDIUM=sd_card (default, Lite) or emmc"
 	@echo "  make submodules  - Initialize and update all git submodules"
 	@echo "  make patch       - Apply kernel and driver patches"
+	@echo "  make bootloader  - Build U-Boot, IDBlock, and Env (TARGET_MEDIUM=sd_card|emmc)"
 	@echo "  make kernel      - Build patched Linux kernel (boot.img)"
-	@echo "                     Options: TARGET_MEDIUM=sd_card (default) or emmc"
+	@echo "                     Options: TARGET_MEDIUM=sd_card (default, Lite) or emmc"
 	@echo "  make apps        - Build all userland applications (display, video, app)"
 	@echo "  make display     - Build kvm_display (touchscreen LVGL UI)"
 	@echo "  make video       - Build kvm_video (hardware H.264/H.265 encoder)"
 	@echo "  make app         - Build kvm_app (Go backend & web server)"
 	@echo "  make sd-image    - Generate bootable raw SD card image for dd/Etcher"
+	@echo "                     Options: TARGET_MEDIUM=sd_card (default, Lite) or emmc"
 	@echo "  make ota         - Package OTA update zip for Web UI flashing"
 	@echo "  make clean       - Remove compiled artifacts"

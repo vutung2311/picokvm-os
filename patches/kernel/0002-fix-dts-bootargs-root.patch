@@ -1,8 +1,8 @@
 diff --git a/sysdrv/source/kernel/arch/arm/boot/dts/rv1106-luckfox-pico-kvm-ipc.dtsi b/sysdrv/source/kernel/arch/arm/boot/dts/rv1106-luckfox-pico-kvm-ipc.dtsi
-index 437c563e3..3932bf578 100755
+index 437c563e3..5374a4aeb 100755
 --- a/sysdrv/source/kernel/arch/arm/boot/dts/rv1106-luckfox-pico-kvm-ipc.dtsi
 +++ b/sysdrv/source/kernel/arch/arm/boot/dts/rv1106-luckfox-pico-kvm-ipc.dtsi
-@@ -10,7 +10,7 @@
+@@ -10,9 +10,11 @@
  
  / {
  	chosen {
@@ -10,4 +10,8 @@ index 437c563e3..3932bf578 100755
 +		bootargs = "earlycon=uart8250,mmio32,0xff4c0000 console=ttyFIQ0 rootwait snd_soc_core.prealloc_buffer_size_kbytes=16 coherent_pool=0";
  	};
  
++	/delete-node/ adc-keys;
++
  	backlight: backlight {
+ 		status = "okay";
+ 		compatible = "pwm-backlight";

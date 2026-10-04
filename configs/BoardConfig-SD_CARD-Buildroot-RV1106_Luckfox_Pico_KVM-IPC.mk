@@ -23,8 +23,8 @@ export RK_KERNEL_DTS=rv1106g-luckfox-pico-kvm.dts
 # Target boot medium
 export RK_BOOT_MEDIUM=sd_card
 
-# Uboot defconfig fragment
-export RK_UBOOT_DEFCONFIG_FRAGMENT=rk-emmc.config
+# Uboot defconfig fragment (disabled for SD card / Lite version)
+# export RK_UBOOT_DEFCONFIG_FRAGMENT=rk-emmc.config
 
 # specify post.sh for delete/overlay files
 # export RK_PRE_BUILD_OEM_SCRIPT=rv1103-spi_nor-post.sh
@@ -35,7 +35,7 @@ export RK_UBOOT_DEFCONFIG_FRAGMENT=rk-emmc.config
 #       <partdef> := <size>[@<offset>](part-name)
 # Note:
 #   If the first partition offset is not 0x0, it must be added. Otherwise, it needn't adding.
-export RK_PARTITION_CMD_IN_ENV="32K(env),512K@32K(idblock),256K(uboot),32M(boot),512M(oem),4G(userdata),2G(rootfs)"
+export RK_PARTITION_CMD_IN_ENV="32K(env),512K@32K(idblock),512K@544K(uboot_a),512K@1056K(uboot_b),256K@1568K(misc),224K@1824K(security),32M@2M(boot_a),32M@34M(boot_b),512M@66M(system_a),512M@578M(system_b),-(userdata)"
 
 # config partition's filesystem type (squashfs is readonly)
 # emmc:    squashfs/ext4
@@ -46,7 +46,7 @@ export RK_PARTITION_CMD_IN_ENV="32K(env),512K@32K(idblock),256K(uboot),32M(boot)
 #         AAAA ----------> partition name
 #         /BBBB/CCCC ----> partition mount point
 #         ext4 ----------> partition filesystem type
-export RK_PARTITION_FS_TYPE_CFG=rootfs@IGNORE@ext4,userdata@/userdata@ext4,oem@/oem@ext4
+export RK_PARTITION_FS_TYPE_CFG=system_a@IGNORE@ext4,userdata@/userdata@ext4
 
 # config filesystem compress (Just for squashfs or ubifs)
 # squashfs: lz4/lzo/lzma/xz/gzip, default xz

@@ -1,6 +1,65 @@
 --- a/drivers/input/touchscreen/hynitron-cst816x.c
 +++ b/drivers/input/touchscreen/hynitron-cst816x.c
-@@ -148,15 +148,14 @@ static irqreturn_t cst816x_irq_cb(int irq, void *cookie)
+@@ -92,16 +92,22 @@ static int cst816x_i2c_read_register(struct cst816x_priv *priv, u8 reg,
+ }
+ 
+ static bool cst816x_process_touch(struct cst816x_priv *priv,
+-				  struct cst816x_touch_info *info)
++				  struct cst816x_touch_info *info,
++				  u8 *event_flag)
+ {
++	u16 raw_x;
++
+ 	if (cst816x_i2c_read_register(priv, CST816X_FRAME, info, sizeof(*info)))
+ 		return false;
+ 
+-	info->abs_x = get_unaligned_be16(&info->abs_x) & GENMASK(11, 0);
++	raw_x = get_unaligned_be16(&info->abs_x);
++	*event_flag = (raw_x >> 14) & 0x03;
++
++	info->abs_x = raw_x & GENMASK(11, 0);
+ 	info->abs_y = get_unaligned_be16(&info->abs_y) & GENMASK(11, 0);
+ 
+-	dev_dbg(&priv->client->dev, "x: %d, y: %d, t: %d, g: 0x%x\n",
+-		info->abs_x, info->abs_y, info->touch, info->gesture);
++	dev_dbg(&priv->client->dev, "x: %d, y: %d, t: %d, g: 0x%x, ef: %d\n",
++		info->abs_x, info->abs_y, info->touch, info->gesture, *event_flag);
+ 
+ 	return true;
+ }
+@@ -118,9 +124,13 @@ static int cst816x_register_input(struct cst816x_priv *priv)
+ 	priv->input->id.bustype = BUS_I2C;
+ 	input_set_drvdata(priv->input, priv);
+ 
+-	for (i = 0; i < ARRAY_SIZE(priv->event_map); i++)
+-		input_set_capability(priv->input, EV_KEY,
+-				     priv->event_map[i].code);
++	input_set_capability(priv->input, EV_KEY, BTN_TOUCH);
++
++	for (i = 0; i < ARRAY_SIZE(priv->event_map); i++) {
++		if (priv->event_map[i].code)
++			input_set_capability(priv->input, EV_KEY,
++					     priv->event_map[i].code);
++	}
+ 
+ 	input_set_abs_params(priv->input, ABS_X, 0, 240, 0, 0);
+ 	input_set_abs_params(priv->input, ABS_Y, 0, 240, 0, 0);
+@@ -140,23 +150,27 @@ static irqreturn_t cst816x_irq_cb(int irq, void *cookie)
+ {
+ 	struct cst816x_priv *priv = cookie;
+ 	struct cst816x_touch_info info;
++	u8 event_flag = 0;
++	bool is_down;
+ 
+-	if (!cst816x_process_touch(priv, &info))
++	if (!cst816x_process_touch(priv, &info, &event_flag))
+ 		return IRQ_HANDLED;
+ 
+-	if (info.touch) {
++	/* event_flag 0x01 = Touch Up / release. info.touch == 0 = no finger. */
++	is_down = (info.touch > 0) && (event_flag != 1);
++
++	if (is_down) {
  		input_report_abs(priv->input, ABS_X, info.abs_x);
  		input_report_abs(priv->input, ABS_Y, info.abs_y);
  		input_report_key(priv->input, BTN_TOUCH, 1);
@@ -17,7 +76,7 @@
 -			input_report_key(priv->input, BTN_TOUCH, 0);
 +		u16 code = priv->event_map[info.gesture & 0x0F].code;
 +		if (code)
-+			input_report_key(priv->input, code, info.touch);
++			input_report_key(priv->input, code, is_down);
  	}
  
  	input_sync(priv->input);

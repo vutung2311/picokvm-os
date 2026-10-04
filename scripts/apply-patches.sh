@@ -28,6 +28,22 @@ else
     echo "  [SKIP] kvm_display loop tick patch already applied or clean."
 fi
 
+if git apply --check "$ROOT_DIR/patches/kvm_display/0002-touchscreen-auto-detect-and-gesture-fix.patch" 2>/dev/null; then
+    git apply "$ROOT_DIR/patches/kvm_display/0002-touchscreen-auto-detect-and-gesture-fix.patch"
+    echo "  [OK] kvm_display touchscreen auto-detect patch applied."
+else
+    echo "  [SKIP] kvm_display touchscreen auto-detect patch already applied or clean."
+fi
+
+echo "==> Applying U-Boot Patches..."
+cd "$ROOT_DIR/sdk/sysdrv/source/uboot/u-boot"
+if git apply --check "$ROOT_DIR/patches/uboot/0001-fix-ab-root-part-devnum.patch" 2>/dev/null; then
+    git apply "$ROOT_DIR/patches/uboot/0001-fix-ab-root-part-devnum.patch"
+    echo "  [OK] U-Boot android_ab root devnum patch applied."
+else
+    echo "  [SKIP] U-Boot android_ab root devnum patch already applied or clean."
+fi
+
 echo "==> Linking Board Configurations..."
 cp -fv "$ROOT_DIR/configs/"BoardConfig-*.mk "$ROOT_DIR/sdk/project/cfg/BoardConfig_IPC/"
 echo "==> All patches and configs verified."
