@@ -9,7 +9,7 @@ OUTPUT_DIR := $(ROOT_DIR)/output
 TARGET_MEDIUM ?= sd_card
 
 .NOTPARALLEL:
-.PHONY: all submodules patch bootloader kernel apps display video app vpn sd-image ota clean help
+.PHONY: all submodules patch bootloader kernel apps display video app vpn sd-image ota clean help test
 
 all: submodules patch bootloader kernel apps ota sd-image
 	@echo ""
@@ -77,10 +77,18 @@ clean:
 	@cd $(ROOT_DIR)/kvm_video && make clean 2>/dev/null || true
 	@cd $(ROOT_DIR)/kvm && rm -rf bin/ 2>/dev/null || true
 
+test:
+	@echo "==> Running PicoKVM test suite and regression invariant checks..."
+	@$(MAKE) -C $(ROOT_DIR)/kvm test
+	@echo "==> Validating shell scripts syntax..."
+	@bash -n $(ROOT_DIR)/scripts/*.sh
+	@echo "==> All PicoKVM tests and safety restrictions passed successfully!"
+
 help:
 	@echo "PicoKVM-OS Build System Targets:"
 	@echo "  make all         - Complete build (bootloader, kernel, apps, ota, and sd-image)"
 	@echo "                     Options: TARGET_MEDIUM=sd_card (default, Lite) or emmc"
+	@echo "  make test        - Run automated tests, regression invariants, and linting"
 	@echo "  make submodules  - Initialize and update all git submodules"
 	@echo "  make patch       - Apply kernel and driver patches"
 	@echo "  make bootloader  - Build U-Boot, IDBlock, and Env (TARGET_MEDIUM=sd_card|emmc)"
@@ -94,3 +102,4 @@ help:
 	@echo "                     Options: TARGET_MEDIUM=sd_card (default, Lite) or emmc"
 	@echo "  make ota         - Package OTA update zip for Web UI flashing"
 	@echo "  make clean       - Remove compiled artifacts"
+
