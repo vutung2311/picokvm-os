@@ -71,6 +71,10 @@ fi
 cd "$ROOT_DIR/kvm"
 GOOS=linux GOARCH=arm GOARM=7 go build -trimpath -ldflags="-s -w" -o "$OUT_BIN/kvm_app" cmd/main.go
 
+echo "==> Building kvm_vpn daemon..."
+cd "$ROOT_DIR/kvm_vpn"
+GOOS=linux GOARCH=arm GOARM=7 go build -trimpath -ldflags="-s -w" -o "$OUT_BIN/kvm_vpn" main.go
+
 echo "==> All PicoKVM application binaries built successfully:"
 ls -lh "$OUT_BIN"
 
@@ -90,5 +94,7 @@ if [ -f "$SYSTEM_IMG" ] && command -v debugfs >/dev/null 2>&1; then
         debugfs -w -R "write $bin /usr/bin/$bname" "$SYSTEM_IMG" >/dev/null 2>&1
         echo "  [OK] Injected $bname into /usr/bin/"
     done
+    debugfs -w -R "rm /usr/bin/zerotier-cli" "$SYSTEM_IMG" >/dev/null 2>&1 || true
+    debugfs -w -R "symlink /usr/bin/zerotier-cli zerotier-one" "$SYSTEM_IMG" >/dev/null 2>&1 || true
 fi
 

@@ -60,6 +60,8 @@ if [ -d "$ROOT_DIR/output/bin" ] && command -v debugfs >/dev/null 2>&1; then
         debugfs -w -R "rm /usr/bin/$bname" "$SYSTEM_IMG" >/dev/null 2>&1 || true
         debugfs -w -R "write $bin /usr/bin/$bname" "$SYSTEM_IMG" >/dev/null 2>&1
     done
+    debugfs -w -R "rm /usr/bin/zerotier-cli" "$SYSTEM_IMG" >/dev/null 2>&1 || true
+    debugfs -w -R "symlink /usr/bin/zerotier-cli zerotier-one" "$SYSTEM_IMG" >/dev/null 2>&1 || true
 fi
 
 echo "==> Creating Rockchip RV1106 Dual-Slot A/B bootable SD image: $IMAGE_PATH"
@@ -131,7 +133,7 @@ dd if="$SYSTEM_IMG" of="$IMAGE_PATH" seek=1183744 bs=512 conv=notrunc status=non
 echo "  Formatting initial ext4 filesystem on userdata (sector 2232320)..."
 TMP_USERDATA="/tmp/picokvm_userdata_init.img"
 rm -f "$TMP_USERDATA"
-mke2fs -t ext4 -L userdata -F "$TMP_USERDATA" 64M >/dev/null 2>&1
+mke2fs -t ext4 -O ^orphan_file,^metadata_csum_seed -L userdata -F "$TMP_USERDATA" 64M >/dev/null 2>&1
 if [ -d "$ROOT_DIR/output/bin" ] && command -v debugfs >/dev/null 2>&1; then
     echo "  Populating /userdata/picokvm/bin with compiled applications..."
     debugfs -w -R "mkdir /picokvm" "$TMP_USERDATA" >/dev/null 2>&1 || true

@@ -9,7 +9,7 @@ OUTPUT_DIR := $(ROOT_DIR)/output
 TARGET_MEDIUM ?= sd_card
 
 .NOTPARALLEL:
-.PHONY: all submodules patch bootloader kernel apps display video app sd-image ota clean help
+.PHONY: all submodules patch bootloader kernel apps display video app vpn sd-image ota clean help
 
 all: submodules patch bootloader kernel apps ota sd-image
 	@echo ""
@@ -55,6 +55,11 @@ video: patch
 app: patch
 	@echo "==> Building kvm_app..."
 	@cd $(ROOT_DIR)/kvm && GOOS=linux GOARCH=arm GOARM=7 go build -trimpath -ldflags="-s -w" -o $(OUTPUT_DIR)/bin/kvm_app cmd/main.go
+	@mkdir -p $(OUTPUT_DIR)/bin
+
+vpn:
+	@echo "==> Building kvm_vpn..."
+	@cd $(ROOT_DIR)/kvm_vpn && GOOS=linux GOARCH=arm GOARM=7 go build -trimpath -ldflags="-s -w" -o $(OUTPUT_DIR)/bin/kvm_vpn main.go
 	@mkdir -p $(OUTPUT_DIR)/bin
 
 sd-image: bootloader kernel apps
